@@ -70,7 +70,7 @@ interface ExpenseCategories
     public function checkExpenseCategory($category);
 }
 
-//------------------------------ "Grand daddy class" ----------------------------------------
+//------------------------------ "Grand daddy class" (abstract) ----------------------------------------
 
 abstract class Transaction
 {
@@ -83,6 +83,59 @@ abstract class Transaction
         $this->item = $cItem;
         $this->category = $cCategory;
         $this->amount = $cAmount;
+    }
+    public static function displayTrans()
+    {
+        $filename = "transfile.txt";
+        if (file_exists($filename)) {
+            $fp = fopen($filename, "r");
+            while (true) {
+                $line = fgets($fp);
+                if (feof($fp)) {
+                    print "<br><b>Program Ended Normally</b>";
+                    return; //exit the function
+                }
+                list($aIncExp, $aItem, $aCategory, $aAmount) = explode('*', $line);
+
+                print "<tr>";
+                print "<td>$aIncExp</td>";
+                print "<td>$aItem</td>";
+                print "<td>$aCategory</td>";
+                print "<td>$aAmount</td>";
+                print "</tr>";
+                fclose($fp);
+            }
+        }
+    }
+    public function addTrans($aIncExp)
+    {
+        $tran = $aIncExp . "*" . $this->item . "*";
+        $tran .= $this->category . "*" . $this->amount . "*\n";
+
+        $filename = "transfile.txt";
+        $fpw = fopen($filename, "a");
+        fwrite($fpw, $tran);
+        fclose($fpw);
+    }
+}
+
+//----------------Classes that inherits Transaction----------------------
+class IncomeTran extends Transaction implements IncomeCategories
+{
+    private $tranType = "Income";
+    //from abstract function in interface, REQUIRED to define function here below:
+    public function checkIncomeCategory($category)
+    {
+        $validCategories = explode('*', self::INCOMECATS);
+        $isValid = false;
+
+        foreach ($validCategories as $element) {
+            if ($element == $category) {
+                $isValid = true;
+            }
+        }
+        return $isValid;
+
     }
 }
 ?>
